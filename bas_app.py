@@ -7,7 +7,7 @@ import os
 st.set_page_config(page_title="BAS Analytics Tool", layout="wide")
 
 st.title("BAS Analytics Tool")
-st.caption("Upload Niagara or EBO exports to generate alarm and trend analysis reports.")
+st.caption("Upload Niagara exports to generate alarm and trend analysis reports.")
 
 st.divider()
 
