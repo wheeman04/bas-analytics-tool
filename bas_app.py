@@ -101,7 +101,7 @@ if run_button:
                     tmp.write(trend_file.read())
                     trend_tmp_path = tmp.name
 
-                df, spikes, gaps, stats = analyze_trends(trend_tmp_path, temp_cols)
+                df, df_resampled, spikes, gaps, stats = analyze_trends(trend_tmp_path, temp_cols)
 
                 st.subheader("Trend summary")
                 t1, t2, t3 = st.columns(3)
@@ -112,7 +112,7 @@ if run_button:
                 st.subheader("Temperature trends")
                 fig2, ax2 = plt.subplots(figsize=(10, 4))
                 for col in temp_cols:
-                    ax2.plot(df["timestamp"], df[col], label=col, linewidth=1.5)
+                    ax2.plot(df_resampled.index, df_resampled[col], label=col, linewidth=1.5)
                 ax2.set_xlabel("Timestamp")
                 ax2.set_ylabel("Temperature (°F)")
                 ax2.set_title("Temperature trends over time")

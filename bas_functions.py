@@ -116,7 +116,10 @@ def analyze_trends(filepath, temp_cols, std_threshold=2, gap_minutes=30):
 
     stats = df[temp_cols].describe().round(2)
 
-    return df, spikes, gaps, stats
+    df_indexed = df.set_index("timestamp")
+    df_resampled = df_indexed[temp_cols].resample("h").mean()
+
+    return df, df_resampled, spikes, gaps, stats
 
 
 def write_trend_report(report_path, df, spikes, gaps, stats):
@@ -256,7 +259,7 @@ def plot_alarm_chart(active_alarms, save_path):
     plt.close()
 
 
-def plot_trend_chart(df, temp_cols, save_path):
+def plot_trend_chart(df_resampled, temp_cols, save_path):
     import matplotlib.pyplot as plt
     import os
     os.makedirs(os.path.dirname(save_path), exist_ok=True)
@@ -264,11 +267,11 @@ def plot_trend_chart(df, temp_cols, save_path):
     fig, ax = plt.subplots(figsize=(12, 5))
 
     for col in temp_cols:
-        ax.plot(df['timestamp'], df[col], label=col, linewidth=1.5)
+        ax.plot(df_resampled.index, df_resampled[col], label=col, linewidth=1.5)
 
     ax.set_xlabel('Timestamp')
     ax.set_ylabel('Temperature (°F)')
-    ax.set_title('Temperature trends over time')
+    ax.set_title('Temperature trends over time — gaps shown honestly')
     ax.legend()
     plt.xticks(rotation=45)
     plt.tight_layout()
