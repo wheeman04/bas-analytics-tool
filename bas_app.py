@@ -17,7 +17,13 @@ with col1:
 with col2:
     run_trends = st.checkbox("Analyze trends", value=True)
 
-site_name = st.text_input("Site name (used in report header)", value="My Site")
+scol_name, col_btn = st.columns([4, 1])
+with col_name:
+    site_name = st.text_input("Site name (used in report header)", value="My Site")
+with col_btn:
+    st.write("")
+    st.write("")
+    name_confirmed = st.button("Confirm", key="confirm_name")
 
 alarm_file = None
 trend_file = None
@@ -174,5 +180,21 @@ if run_button:
                     file_name=f"{site_name}_trend_report.txt",
                     mime="text/plain"
                 )
-
+if run_alarms and run_trends and alarm_file is not None and trend_file is not None:
+                from bas_functions import write_site_health_report
+                health_report_path = tempfile.mktemp(suffix=".txt")
+                write_site_health_report(
+                    health_report_path, site_name,
+                    site_counts, class_counts,
+                    active_alarms, resolved_alarms,
+                    source_counts, df, spikes, gaps
+                )
+                with open(health_report_path, "r") as f:
+                    health_report_text = f.read()
+                st.download_button(
+                    label="Download site health report (combined)",
+                    data=health_report_text,
+                    file_name=f"{site_name}_site_health_report.txt",
+                    mime="text/plain"
+                )
             st.success("Analysis complete.")
