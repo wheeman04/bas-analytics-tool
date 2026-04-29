@@ -197,4 +197,4 @@ if run_alarms and run_trends and alarm_file is not None and trend_file is not No
                     file_name=f"{site_name}_site_health_report.txt",
                     mime="text/plain"
                 )
-            st.success("Analysis complete.")
+    st.success("Analysis complete.")
