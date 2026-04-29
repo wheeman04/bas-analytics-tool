@@ -17,6 +17,8 @@ with col1:
 with col2:
     run_trends = st.checkbox("Analyze trends", value=True)
 
+site_name = st.text_input("Site name (used in report header)", value="My Site")
+
 alarm_file = None
 trend_file = None
 temp_cols = []
@@ -133,5 +135,44 @@ if run_button:
                     st.subheader("Data gaps detected")
                     for ts, duration in gaps:
                         st.warning(f"Gap starting {ts} — duration: {duration}")
+
+            st.divider()
+            st.subheader("Download results")
+
+            import io
+            import tempfile
+
+            if run_alarms and alarm_file is not None:
+                from bas_functions import write_alarm_report
+                alarm_report_path = tempfile.mktemp(suffix=".txt")
+                write_alarm_report(
+                    alarm_report_path,
+                    site_counts, class_counts,
+                    active_alarms, resolved_alarms,
+                    source_counts
+                )
+                with open(alarm_report_path, "r") as f:
+                    alarm_report_text = f.read()
+                st.download_button(
+                    label="Download alarm report",
+                    data=alarm_report_text,
+                    file_name=f"{site_name}_alarm_report.txt",
+                    mime="text/plain"
+                )
+
+            if run_trends and trend_file is not None:
+                from bas_functions import write_trend_report
+                trend_report_path = tempfile.mktemp(suffix=".txt")
+                write_trend_report(
+                    trend_report_path, df, spikes, gaps, stats
+                )
+                with open(trend_report_path, "r") as f:
+                    trend_report_text = f.read()
+                st.download_button(
+                    label="Download trend report",
+                    data=trend_report_text,
+                    file_name=f"{site_name}_trend_report.txt",
+                    mime="text/plain"
+                )
 
             st.success("Analysis complete.")
