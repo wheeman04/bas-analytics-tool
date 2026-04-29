@@ -1,4 +1,3 @@
-
 import streamlit as st
 import pandas as pd
 import sys
@@ -17,7 +16,7 @@ with col1:
 with col2:
     run_trends = st.checkbox("Analyze trends", value=True)
 
-scol_name, col_btn = st.columns([4, 1])
+col_name, col_btn = st.columns([4, 1])
 with col_name:
     site_name = st.text_input("Site name (used in report header)", value="My Site")
 with col_btn:
@@ -146,7 +145,6 @@ if run_button:
             st.subheader("Download results")
 
             import io
-            import tempfile
 
             if run_alarms and alarm_file is not None:
                 from bas_functions import write_alarm_report
@@ -180,7 +178,8 @@ if run_button:
                     file_name=f"{site_name}_trend_report.txt",
                     mime="text/plain"
                 )
-if run_alarms and run_trends and alarm_file is not None and trend_file is not None:
+
+            if run_alarms and run_trends and alarm_file is not None and trend_file is not None:
                 from bas_functions import write_site_health_report
                 health_report_path = tempfile.mktemp(suffix=".txt")
                 write_site_health_report(
@@ -197,4 +196,5 @@ if run_alarms and run_trends and alarm_file is not None and trend_file is not No
                     file_name=f"{site_name}_site_health_report.txt",
                     mime="text/plain"
                 )
-    st.success("Analysis complete.")
+
+            st.success("Analysis complete.")
