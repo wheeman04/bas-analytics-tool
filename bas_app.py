@@ -64,7 +64,7 @@ if run_button:
                     tmp.write(alarm_file.read())
                     alarm_tmp_path = tmp.name
 
-                site_counts, class_counts, active_alarms, resolved_alarms, source_counts = analyze_alarms(alarm_tmp_path)
+                site_counts, class_counts, active_alarms, resolved_alarms, source_counts, source_messages = analyze_alarms(alarm_tmp_path)
 
                 st.subheader("Alarm summary")
                 m1, m2, m3, m4 = st.columns(4)
