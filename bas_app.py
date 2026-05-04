@@ -102,6 +102,7 @@ if run_button:
                         clean_msg = raw_msg
                     source_rows.append({"Source": src, "Count": count, "Last message": clean_msg})
                 source_df = pd.DataFrame(source_rows)
+                source_df.index = source_df.index + 1
                 st.dataframe(source_df, use_container_width=True)
 
             if run_trends and trend_file is not None and len(temp_cols) > 0:

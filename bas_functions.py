@@ -42,7 +42,7 @@ def analyze_alarms(filepath):
             class_counts[alarm_class] = class_counts.get(alarm_class, 0) + 1
             source_counts[source] = source_counts.get(source, 0) + 1
 
-            if message:
+            if message and state == "Offnormal":
                 source_messages[source] = message
 
             if state == "Offnormal":
