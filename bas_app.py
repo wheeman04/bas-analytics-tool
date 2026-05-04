@@ -102,6 +102,9 @@ if run_button:
                         clean_msg = raw_msg
                     source_rows.append({"Source": src, "Count": count, "Last message": clean_msg})
                 source_df = pd.DataFrame(source_rows)
+                source_df['Last message'] = source_df['Last message'].apply(
+                    lambda x: '⚠️ No active message recorded' if x == '' else x
+                )
                 source_df.index = source_df.index + 1
                 st.dataframe(source_df, use_container_width=True)
 
