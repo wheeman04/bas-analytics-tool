@@ -1,3 +1,4 @@
+
 import streamlit as st
 import pandas as pd
 import sys
@@ -6,7 +7,7 @@ import os
 st.set_page_config(page_title="BAS Analytics Tool", layout="wide")
 
 st.title("BAS Analytics Tool")
-st.caption("Upload Niagara exports to generate alarm and trend analysis reports.")
+st.caption("Upload Niagara or EBO exports to generate alarm and trend analysis reports.")
 
 st.divider()
 
@@ -15,14 +16,6 @@ with col1:
     run_alarms = st.checkbox("Analyze alarms", value=True)
 with col2:
     run_trends = st.checkbox("Analyze trends", value=True)
-
-col_name, col_btn = st.columns([4, 1])
-with col_name:
-    site_name = st.text_input("Site name (used in report header)", value="My Site")
-with col_btn:
-    st.write("")
-    st.write("")
-    name_confirmed = st.button("Confirm", key="confirm_name")
 
 alarm_file = None
 trend_file = None
@@ -100,7 +93,15 @@ if run_button:
 
                 st.subheader("Top 10 alarm sources")
                 sorted_sources = sorted(source_counts.items(), key=lambda x: x[1], reverse=True)[:10]
-                source_df = pd.DataFrame(sorted_sources, columns=["Source", "Count"])
+                source_rows = []
+                for src, count in sorted_sources:
+                    raw_msg = source_messages.get(src, "")
+                    if raw_msg.startswith(src):
+                        clean_msg = raw_msg[len(src):].strip(" :-")
+                    else:
+                        clean_msg = raw_msg
+                    source_rows.append({"Source": src, "Count": count, "Last message": clean_msg})
+                source_df = pd.DataFrame(source_rows)
                 st.dataframe(source_df, use_container_width=True)
 
             if run_trends and trend_file is not None and len(temp_cols) > 0:
@@ -108,7 +109,7 @@ if run_button:
                     tmp.write(trend_file.read())
                     trend_tmp_path = tmp.name
 
-                df, df_resampled, spikes, gaps, stats = analyze_trends(trend_tmp_path, temp_cols)
+                df, spikes, gaps, stats = analyze_trends(trend_tmp_path, temp_cols)
 
                 st.subheader("Trend summary")
                 t1, t2, t3 = st.columns(3)
@@ -119,7 +120,7 @@ if run_button:
                 st.subheader("Temperature trends")
                 fig2, ax2 = plt.subplots(figsize=(10, 4))
                 for col in temp_cols:
-                    ax2.plot(df_resampled.index, df_resampled[col], label=col, linewidth=1.5)
+                    ax2.plot(df["timestamp"], df[col], label=col, linewidth=1.5)
                 ax2.set_xlabel("Timestamp")
                 ax2.set_ylabel("Temperature (°F)")
                 ax2.set_title("Temperature trends over time")
@@ -140,61 +141,5 @@ if run_button:
                     st.subheader("Data gaps detected")
                     for ts, duration in gaps:
                         st.warning(f"Gap starting {ts} — duration: {duration}")
-
-            st.divider()
-            st.subheader("Download results")
-
-            import io
-
-            if run_alarms and alarm_file is not None:
-                from bas_functions import write_alarm_report
-                alarm_report_path = tempfile.mktemp(suffix=".txt")
-                write_alarm_report(
-                    alarm_report_path,
-                    site_counts, class_counts,
-                    active_alarms, resolved_alarms,
-                    source_counts
-                )
-                with open(alarm_report_path, "r") as f:
-                    alarm_report_text = f.read()
-                st.download_button(
-                    label="Download alarm report",
-                    data=alarm_report_text,
-                    file_name=f"{site_name}_alarm_report.txt",
-                    mime="text/plain"
-                )
-
-            if run_trends and trend_file is not None:
-                from bas_functions import write_trend_report
-                trend_report_path = tempfile.mktemp(suffix=".txt")
-                write_trend_report(
-                    trend_report_path, df, spikes, gaps, stats
-                )
-                with open(trend_report_path, "r") as f:
-                    trend_report_text = f.read()
-                st.download_button(
-                    label="Download trend report",
-                    data=trend_report_text,
-                    file_name=f"{site_name}_trend_report.txt",
-                    mime="text/plain"
-                )
-
-            if run_alarms and run_trends and alarm_file is not None and trend_file is not None:
-                from bas_functions import write_site_health_report
-                health_report_path = tempfile.mktemp(suffix=".txt")
-                write_site_health_report(
-                    health_report_path, site_name,
-                    site_counts, class_counts,
-                    active_alarms, resolved_alarms,
-                    source_counts, df, spikes, gaps
-                )
-                with open(health_report_path, "r") as f:
-                    health_report_text = f.read()
-                st.download_button(
-                    label="Download site health report (combined)",
-                    data=health_report_text,
-                    file_name=f"{site_name}_site_health_report.txt",
-                    mime="text/plain"
-                )
 
             st.success("Analysis complete.")

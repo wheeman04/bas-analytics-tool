@@ -20,6 +20,7 @@ def analyze_alarms(filepath):
     active_alarms = {}
     resolved_alarms = {}
     source_counts = {}
+    source_messages = {}
 
     with open(filepath, "r", encoding="utf-8-sig") as f:
         reader = csv.DictReader(f)
@@ -27,6 +28,7 @@ def analyze_alarms(filepath):
             source = row["Source"]
             state = row["Source State"]
             alarm_class = row["Alarm Class"]
+            message = row.get("Message Text", "").strip()
 
             if " : " in source:
                 site = source.split(" : ")[0]
@@ -40,12 +42,15 @@ def analyze_alarms(filepath):
             class_counts[alarm_class] = class_counts.get(alarm_class, 0) + 1
             source_counts[source] = source_counts.get(source, 0) + 1
 
+            if message:
+                source_messages[source] = message
+
             if state == "Offnormal":
                 active_alarms[site] = active_alarms.get(site, 0) + 1
             else:
                 resolved_alarms[site] = resolved_alarms.get(site, 0) + 1
 
-    return site_counts, class_counts, active_alarms, resolved_alarms, source_counts
+    return site_counts, class_counts, active_alarms, resolved_alarms, source_counts, source_messages
 
 
 def write_alarm_report(report_path, site_counts, class_counts, active_alarms, resolved_alarms, source_counts):
