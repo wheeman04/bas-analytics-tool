@@ -64,15 +64,16 @@ if run_button:
                     tmp.write(alarm_file.read())
                     alarm_tmp_path = tmp.name
 
-                site_counts, class_counts, active_alarms, resolved_alarms, source_counts, source_messages = analyze_alarms(alarm_tmp_path)
+                site_counts, class_counts, active_alarms, resolved_alarms, source_counts, source_messages, date_range = analyze_alarms(alarm_tmp_path)
 
                 st.subheader("Alarm summary")
+                if date_range:
+                    st.caption(f"Analysis period: {date_range}")
                 m1, m2, m3, m4 = st.columns(4)
                 m1.metric("Total alarms", sum(site_counts.values()))
                 m2.metric("Active alarms", sum(active_alarms.values()))
                 m3.metric("Resolved", sum(resolved_alarms.values()))
                 m4.metric("Buildings", len(site_counts))
-
                 st.subheader("Top 10 active alarm buildings")
                 sorted_active = sorted(active_alarms.items(), key=lambda x: x[1], reverse=True)[:10]
                 buildings = [i[0] for i in sorted_active]

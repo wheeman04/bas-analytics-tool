@@ -22,6 +22,8 @@ def analyze_alarms(filepath):
     source_counts = {}
     source_messages = {}
 
+    timestamps = []
+
     with open(filepath, "r", encoding="utf-8-sig") as f:
         reader = csv.DictReader(f)
         for row in reader:
@@ -29,6 +31,9 @@ def analyze_alarms(filepath):
             state = row["Source State"]
             alarm_class = row["Alarm Class"]
             message = row.get("Message Text", "").strip()
+            ts = row.get("Timestamp", "").strip()
+            if ts:
+                timestamps.append(ts)
 
             if " : " in source:
                 site = source.split(" : ")[0]
@@ -50,7 +55,11 @@ def analyze_alarms(filepath):
             else:
                 resolved_alarms[site] = resolved_alarms.get(site, 0) + 1
 
-    return site_counts, class_counts, active_alarms, resolved_alarms, source_counts, source_messages
+    date_range = ""
+    if timestamps:
+        date_range = f"{timestamps[-1]} to {timestamps[0]}"
+
+    return site_counts, class_counts, active_alarms, resolved_alarms, source_counts, source_messages, date_range
 
 
 def write_alarm_report(report_path, site_counts, class_counts, active_alarms, resolved_alarms, source_counts):
